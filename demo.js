@@ -50,6 +50,26 @@ setStyle(`
     color: red;
     margin-right: 2em;
   }
+
+  .tre-propertiy-sheet {
+    background: #4a4a4b;
+    color: #b6b6b6;
+  }
+
+  .tre-propertiy-sheet summary {
+    font-weight: bold;
+    text-shadow: 0 0 4px black;
+    margin-top: .3em;
+    padding-top: .4em;
+    padding-top: .3em;
+    border-top: 1px solid #807d7d;
+    margin-bottom: .1em;
+  }
+  .tre-propertiy-sheet input {
+    background: #656464;
+    border: none;
+    margin-left: .5em;
+  }
   .tre-propertiy-sheet details > div {
     margin-left: 1em;
   }
