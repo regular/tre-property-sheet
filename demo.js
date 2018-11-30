@@ -1,20 +1,15 @@
 const {client} = require('tre-client')
-const Finder = require('tre-finder')
-const Editor = require('tre-json-editor')
 const h = require('mutant/html-element')
 const Value = require('mutant/value')
 const computed = require('mutant/computed')
 const setStyle = require('module-styles')('tre-schema-demo')
 const {makePane, makeDivider, makeSplitPane} = require('tre-split-pane')
 const WatchMerged = require('tre-prototypes')
+const Finder = require('tre-finder')
+const Editor = require('tre-json-editor')
+const PropertySheet = require('./property-sheet')
+const validate = require('./validate')
 require('brace/theme/solarized_dark')
-
-const Ajv = require('ajv')
-const getProperties = require('.')
-
-function renderError(err) {
-  return Object.keys(err).map(k => h(`span.${k}`, err[k]))
-}
 
 setStyle(`
   body, html, .tre-schema-demo {
@@ -55,22 +50,23 @@ setStyle(`
     color: red;
     margin-right: 2em;
   }
+  .tre-propertiy-sheet details > div {
+    margin-left: 1em;
+  }
+  .tre-propertiy-sheet [data-schema-type="number"] input {
+    width: 3em;
+  }
 `)
 
 client( (err, ssb, config) => {
   if (err) return console.error(err)
+  const watchMerged = WatchMerged(ssb)
+  const renderPropertySheet = PropertySheet()
 
   const contentObs = Value()
-  const watchMerged = WatchMerged(ssb)
+  const syntaxErrorObs = Value()
   const primarySelection = Value()
-  /*
-  const merged_kv = computed(primarySelection, kv => {
-    const c = content(kv)
-    if (!c) return
-    return watchMerged(c.revisionRoot || kv.key)
-  })
-  */
-  const content_kv = computed(contentObs, c => {
+  const editing_kv = computed(contentObs, c => {
     if (!c) return null
     return {
       key: 'fake key',
@@ -79,26 +75,16 @@ client( (err, ssb, config) => {
       }
     }
   })
-  const merged_content = watchMerged(content_kv)
-  const schema = computed(merged_content, kv => {
-    const s = kv && kv.value.content.schema
-    function pre() {
-      console.log('pre', arguments)
-    }
-    function post() {}
-    if (s) {
-      schemaWalk(s, pre, post)
-    }
-    return s
+  const merged_kv = watchMerged(editing_kv)
+  const schema = computed(merged_kv, kv => {
+    return kv && kv.value.content.schema
   })
-  const errors = computed([schema, merged_content], (s, kv) => { 
+  const errors = computed([schema, merged_kv], (s, kv) => {
     const c = content(kv)
     if (!s || !c) return ['no Schema']
-    const ajv = new Ajv()
-    const ok = ajv.validate(s, c)
-    if (!ok) return ajv.errors
-    return ['Validates!']
-  })
+    return validate(s, c)
+  }) 
+    
   const renderFinder = Finder(ssb, {
     resolve_prototypes: false,
     primarySelection,
@@ -143,9 +129,12 @@ client( (err, ssb, config) => {
           makePane('', [
             h('h1', 'Editor'),
             h('span', computed(primarySelection, kv => `based on ${kv && kv.key}`)),
-            computed(primarySelection, kv => kv ? renderEditor(kv, {contentObs}) : []),
+            computed(primarySelection, kv => kv ? renderEditor(kv, {contentObs, syntaxErrorObs}) : []),
             computed(errors, errs => {
-              return h('.schema-errors', errs.map( e => renderError(e)))
+              return h('.schema-errors', errs ?
+                errs.map( e => renderError(e))
+                : [h('i', 'Content is valid')]
+              )
             })
           ]),
           makeDivider(),
@@ -155,8 +144,13 @@ client( (err, ssb, config) => {
           ]),
           makeDivider(),
           makePane('30%', [
-            h('h1', 'Property Tree'),
-            h('.properties', computed(schema, s => s && getProperties(s).map(renderProperty)))
+            h('h1', 'Property Sheet'), computed([schema, merged_kv, syntaxErrorObs], (schema, kv, syntaxError) => {
+              const c = content(kv)
+              if (!c || !schema) return []
+              return renderPropertySheet(schema, c, {
+                disabled: !!syntaxError
+              })
+            })
           ])
         ])
       ])
@@ -166,16 +160,6 @@ client( (err, ssb, config) => {
 
 // -- utils
 
-function renderProperty({key, value}) {
-  if (value.type == 'object') {
-    return h('details', [
-      h('summary', key),
-      getProperties(value).map(renderProperty)
-    ])
-  }
-  return h('div', key)
-}
-
 function content(kv) {
   return kv && kv.value && kv.value.content 
 }
@@ -184,3 +168,8 @@ function proto(kv) {
   const c = content(kv)
   return c && c.prototype
 }
+
+function renderError(err) {
+  return Object.keys(err).map(k => h(`span.${k}`, err[k]))
+}
+
