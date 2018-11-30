@@ -51,30 +51,34 @@ setStyle(`
     margin-right: 2em;
   }
 
-  .tre-propertiy-sheet {
+  .tre-property-sheet {
     background: #4a4a4b;
     color: #b6b6b6;
   }
 
-  .tre-propertiy-sheet summary {
+  .tre-property-sheet summary {
     font-weight: bold;
     text-shadow: 0 0 4px black;
     margin-top: .3em;
     padding-top: .4em;
-    padding-top: .3em;
+    background: #555454;
     border-top: 1px solid #807d7d;
     margin-bottom: .1em;
   }
-  .tre-propertiy-sheet input {
+  .tre-property-sheet input {
     background: #656464;
     border: none;
     margin-left: .5em;
   }
-  .tre-propertiy-sheet details > div {
+  .tre-property-sheet details > div {
     margin-left: 1em;
   }
-  .tre-propertiy-sheet [data-schema-type="number"] input {
-    width: 3em;
+  .tre-property-sheet [data-schema-type="number"] input {
+    width: 4em;
+  }
+  .tre-property-sheet .properties {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 5em);
   }
 `)
 
