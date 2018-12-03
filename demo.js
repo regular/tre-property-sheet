@@ -66,9 +66,12 @@ setStyle(`
     margin-bottom: .1em;
   }
   .tre-property-sheet input {
-    background: #656464;
+    background: #D0D052;
     border: none;
     margin-left: .5em;
+  }
+  .tre-property-sheet .inherited input {
+    background: #656464;
   }
   .tre-property-sheet details > div {
     margin-left: 1em;
@@ -171,8 +174,9 @@ client( (err, ssb, config) => {
             h('h1', 'Property Sheet'), computed([schema, merged_kv, syntaxErrorObs], (schema, kv, syntaxError) => {
               const c = content(kv)
               if (!c || !schema) return []
-              return renderPropertySheet(schema, c, {
-                disabled: !!syntaxError
+              return renderPropertySheet(kv, {
+                disabled: !!syntaxError,
+                contentObs
               })
             })
           ])
