@@ -7,7 +7,7 @@ const {makePane, makeDivider, makeSplitPane} = require('tre-split-pane')
 const WatchMerged = require('tre-prototypes')
 const Finder = require('tre-finder')
 const Editor = require('tre-json-editor')
-const PropertySheet = require('./property-sheet')
+const PropertySheet = require('.')
 const validate = require('./validate')
 require('brace/theme/solarized_dark')
 

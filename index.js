@@ -1,6 +1,6 @@
 const h = require('mutant/html-element')
 const Value = require('mutant/value')
-const getProperties = require('./get-properties')
+const getProperties = require('get-properties-from-schema')
 const pointer = require('json8-pointer')
 
 module.exports = function(opts) {
