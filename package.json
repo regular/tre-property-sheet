@@ -1,22 +1,14 @@
 {
-  "name": "tre-schema",
+  "name": "tre-property-sheet",
   "version": "1.0.0",
-  "description": "",
+  "description": "tre-schema ---",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/regular/tre-schema.git"
-  },
   "keywords": [],
   "author": "Jan Bölsche <jan@lagomorph.de> (https://regular.codes/)",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/regular/tre-schema/issues"
-  },
-  "homepage": "https://github.com/regular/tre-schema#readme",
   "dependencies": {
     "ajv": "^6.6.1",
     "json8-pointer": "^0.7.1",
@@ -42,5 +34,13 @@
     "tre-json-editor": "^2.0.0",
     "tre-split-pane": "^1.0.0",
     "tre-transforms": "^1.0.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/regular/tre-property-sheet.git"
+  },
+  "bugs": {
+    "url": "https://github.com/regular/tre-property-sheet/issues"
+  },
+  "homepage": "https://github.com/regular/tre-property-sheet#readme"
 }
