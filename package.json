@@ -1,7 +1,7 @@
 {
   "name": "tre-property-sheet",
   "version": "1.0.0",
-  "description": "tre-schema ---",
+  "description": "A property sheet (HTML form) created from a JSON schema",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -13,8 +13,7 @@
     "ajv": "^6.6.1",
     "get-properties-from-schema": "^1.0.0",
     "json8-pointer": "^0.7.1",
-    "mutant": "^3.22.1",
-    "tre-prototypes": "^1.2.0"
+    "mutant": "^3.22.1"
   },
   "tre-init": {
     "plugins": {
@@ -33,7 +32,8 @@
     "tre-finder": "^2.0.0",
     "tre-json-editor": "^2.0.0",
     "tre-split-pane": "^1.0.0",
-    "tre-transforms": "^1.0.0"
+    "tre-transforms": "^1.0.0",
+    "tre-prototypes": "^1.2.0"
   },
   "repository": {
     "type": "git",
