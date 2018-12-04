@@ -37,13 +37,14 @@ module.exports = function(opts) {
           integer: Number,
           boolean: Boolean
         }[skv.value.type] || (x => x)
-        v = coerce(v)
-        const c = contentObs()
-        const parent = pointer.find(c, path)
-        if (!parent) return console.error('Unable to set', fullPath)
-        parent[skv.key] = v
-        value = v
-        contentObs.set(c)
+        value = coerce(v)
+        // avoids destroying event.target in event handler
+        setTimeout( ()=> {
+          const c = contentObs()
+          const parent = pointer.find(c, path) || createContainer(schema, c, path)
+          parent[skv.key] = value
+          contentObs.set(c)
+        }, 0)
       }
       if ('number integer string'.split(' ').includes(skv.value.type)) {
         return [
@@ -60,6 +61,9 @@ module.exports = function(opts) {
               type: skv.value['input-type'] || (skv.value.type == 'number' ? 'number' : 'text'),
               value,
               'ev-blur': e => {
+                save(e.target.value)
+              },
+              'ev-change': e => {
                 save(e.target.value)
               },
               'ev-keydown': e => {
@@ -79,4 +83,48 @@ module.exports = function(opts) {
       return []
     }
   }
+}
+
+function getTypeAtPath(schema, path) {
+  if (!path.length) return schema.type
+  const props = getProperties(schema)
+  if (ptops.type !== 'array' && props.type !== 'object') throw new Error('Inavlid schema path:' + path)
+  path = path.slice()
+  const key = path.shift()
+  return getTypeAtPath(proprs[key].value, path)
+}
+
+function matchesSchemaType(o, t) {
+  if(Array.isArray(o)) {
+    if (t == 'array') return true
+    return false
+  } 
+  return t == 'object' && typeof o == 'object'
+}
+
+function throwIfNotMatching(o, t) {
+  if (!matchesSchemaType(o, t)) {
+    console.error('schema.type', t)
+    console.error('object', o)
+    throw new Error('Object does not match schema type')
+  }
+}
+
+function createContainer(schema, obj, path) {
+  throwIfNotMatching(obj, schema.type)
+  if (!path.length) return obj
+  path = path.slice()
+  const key = path.shift()
+  const props = getProperties(schema)
+  const prop = props.find( p => p.key == key)
+  if (!prop) throw new Error('Schema property not found: ' + key)
+  if (obj[key]) {
+    throwIfNotMatching(obj[key], prop.value.type)
+    return createContainer(prop.value, obj[key], path)
+  }
+  const type = prop.value.type
+  const newObj = type == 'object' ? {} : type == 'array' ? [] : undefined
+  if (!newObj) throw new Error('Unable to create container. Wrong schema type: ' + type)
+  obj[key] = newObj
+  return createContainer(prop.value, obj[key], path)
 }
