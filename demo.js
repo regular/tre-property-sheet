@@ -8,6 +8,7 @@ const WatchMerged = require('tre-prototypes')
 const Finder = require('tre-finder')
 const Editor = require('tre-json-editor')
 const PropertySheet = require('.')
+const Shell = require('tre-editor-shell')
 const validate = require('./validate')
 require('brace/theme/solarized_dark')
 
@@ -85,6 +86,28 @@ setStyle(`
     display: grid;
     grid-template-columns: repeat(auto-fill, 5em);
   }
+
+  .tre-editor-shell {
+    width: 100%;
+    height: 100%;
+  }
+  .tre-editor-shell .operations li span {
+    margin-right: .5em;
+  }
+  .tre-editor-shell .new-revision {
+    background: #B9A249;
+    padding: 1em;
+    margin-bottom: 1em;
+  }
+  .tre-editor-shell .operations span.path {
+    font-family: monospace;
+  }
+  .tre-editor-shell .operations span.value.string:before {
+    content: "\\"";
+  }
+  .tre-editor-shell .operations span.value.string:after {
+    content: "\\"";
+  }
 `)
 
 client( (err, ssb, config) => {
@@ -138,6 +161,12 @@ client( (err, ssb, config) => {
     }
   })
 
+  const renderShell = Shell(ssb, {
+    save: (kv, cb) => {
+      ssb.publish(kv.value.content, cb)
+    }
+  })
+
   document.body.appendChild(
     h('.tre-schema-demo', [
       makeSplitPane({horiz: false}, [
@@ -149,8 +178,10 @@ client( (err, ssb, config) => {
           makeDivider(),
           makePane('', [
             h('h1', 'Editor'),
-            h('span', computed(primarySelection, kv => `based on ${kv && kv.key}`)),
-            computed(primarySelection, kv => kv ? renderEditor(kv, {contentObs, syntaxErrorObs}) : []),
+            //h('span', computed(primarySelection, kv => `based on ${kv && kv.key}`)),
+            computed(primarySelection, kv => kv ?  renderShell(unmergeKv(kv), {
+              renderEditor, contentObs, syntaxErrorObs
+            }) : []),
             computed(errors, errs => {
               return h('.schema-errors', errs ?
                 errs.map( e => renderError(e))
@@ -181,6 +212,12 @@ client( (err, ssb, config) => {
 })
 
 // -- utils
+
+function unmergeKv(kv) {
+  // if the message has prototypes and they were merged into this message value,
+  // return the unmerged/original value
+  return kv.meta && kv.meta['prototype-chain'] && kv.meta['prototype-chain'][0] || kv
+}
 
 function content(kv) {
   return kv && kv.value && kv.value.content 
