@@ -146,8 +146,8 @@ client( (err, ssb, config) => {
     },
     factory: {
       menu: ()=> [{label: 'Box', type: 'box'}],
-      make: type => type == 'object' && {
-        type: 'transform',
+      make: type => type == 'box' && {
+        type: 'box',
         prototype: config.tre.prototypes.transform
       }
     }
