@@ -115,17 +115,16 @@ client( (err, ssb, config) => {
   }) 
     
   const renderFinder = Finder(ssb, {
-    resolve_prototypes: false,
+    resolve_prototypes: true, // this is the default
     primarySelection,
     skipFirstLevel: true,
     details: (kv, ctx) => {
       return kv && kv.meta && kv.meta["prototype-chain"] ? h('i', '(has proto)') : []
     },
     factory: {
-      menu: ()=> [{label: 'Object', type: 'object'}],
+      menu: ()=> [{label: 'Box', type: 'object'}],
       make: type => type == 'object' && {
-        type: 'object',
-        text: "Hi, I'm Elfo!",
+        type: 'transform',
         prototype: config.tre.prototypes.transform
       }
     }
@@ -136,13 +135,6 @@ client( (err, ssb, config) => {
       theme: 'ace/theme/solarized_dark',
       tabSize: 2,
       useSoftTabs: true
-    },
-    save: (kv, cb) => {
-      const content = kv.value.content
-      content.revisionBranch = kv.key
-      content.revisionRoot = content.revisionRoot || kv.key
-      console.log('new content', content)
-      ssb.publish(content, cb)
     }
   })
 
