@@ -145,7 +145,7 @@ client( (err, ssb, config) => {
       return kv && kv.meta && kv.meta["prototype-chain"] ? h('i', '(has proto)') : []
     },
     factory: {
-      menu: ()=> [{label: 'Box', type: 'object'}],
+      menu: ()=> [{label: 'Box', type: 'box'}],
       make: type => type == 'object' && {
         type: 'transform',
         prototype: config.tre.prototypes.transform
