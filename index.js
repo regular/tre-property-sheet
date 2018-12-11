@@ -32,6 +32,7 @@ module.exports = function(opts) {
       const isInherited = value !== pointer.find(contentObs(), fullPath)
       
       function save(v) {
+        if (v == value) return
         const coerce = {
           number: Number,
           integer: Number,
