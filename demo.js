@@ -89,7 +89,6 @@ setStyle(`
 
   .tre-editor-shell {
     width: 100%;
-    height: 100%;
   }
   .tre-editor-shell .operations li span {
     margin-right: .5em;
