@@ -11,6 +11,7 @@ module.exports = function(opts) {
     const contentObs = ctx.contentObs || Value({})
     const mergedContent = kv.value.content
     const schema = mergedContent.schema
+    if (!schema) return
 
     const skvs = getProperties(schema)
     return h('fieldset.tre-property-sheet', {
