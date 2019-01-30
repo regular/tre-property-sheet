@@ -8,7 +8,7 @@
   },
   "keywords": [],
   "author": "Jan Bölsche <jan@lagomorph.de> (https://regular.codes/)",
-  "license": "ISC",
+  "license": "AGPL-3.0-or-later",
   "dependencies": {
     "ajv": "^6.6.1",
     "deep-equal": "^1.0.1",
