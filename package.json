@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "ajv": "^6.6.1",
+    "deep-equal": "^1.0.1",
     "get-properties-from-schema": "^1.0.0",
     "json8-pointer": "^0.7.1",
     "mutant": "^3.22.1",
