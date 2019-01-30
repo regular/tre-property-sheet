@@ -12,15 +12,13 @@ module.exports = function(opts) {
     ctx = ctx || {}
     const content = kv && kv.value.content
     const contentObs = ctx.contentObs || Value(content || {})
-    const schema = computed(contentObs, content => content.schema, {comparer})
+    const schema = content && content.schema
+    if (!schema) return
     
-    return computed(schema, schema => {
-      if (!schema) return []
-      const skvs = getProperties(schema)
-      return h('fieldset.tre-property-sheet', {
-        disabled: ctx.disabled == true
-      }, skvs.map(skv => renderProperty(skv, [])))
-    })
+    const skvs = getProperties(schema)
+    return h('fieldset.tre-property-sheet', {
+      disabled: ctx.disabled == true
+    }, skvs.map(skv => renderProperty(skv, [])))
 
     function renderProperty(skv, path) {
       const fullPath = path.concat([skv.key])
