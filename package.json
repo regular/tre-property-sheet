@@ -1,6 +1,6 @@
 {
   "name": "tre-property-sheet",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "A property sheet (HTML form) created from a JSON schema",
   "main": "index.js",
   "scripts": {
