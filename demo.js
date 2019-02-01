@@ -23,22 +23,12 @@ client( (err, ssb, config) => {
   const syntaxErrorObs = Value()
   const primarySelection = Value()
 
-  // this is the "draft", a kv that changes with any edits made befire
-  // publishing
-  const editing_kv = computed(contentObs, c => {
-    if (!c) return null
-    return {
-      key: 'fake key',
-      value: {
-        content: c
-      }
-    }
-  })
-  const merged_kv = watchMerged(editing_kv)
-  const schema = computed(merged_kv, kv => {
+  const previewObs = getPreviewObs(contentObs)
+  const schema = computed(previewObs, kv => {
     return kv && kv.value.content.schema
   })
-  const errors = computed([schema, merged_kv], (s, kv) => {
+  // TODO: move to EditorShell
+  const errors = computed([schema, previewObs], (s, kv) => {
     const c = content(kv)
     if (!s || !c) return ['no Schema']
     return validate(s, c)
@@ -86,9 +76,13 @@ client( (err, ssb, config) => {
           makePane('', [
             h('h1', 'Editor'),
             //h('span', computed(primarySelection, kv => `based on ${kv && kv.key}`)),
-            computed(primarySelection, kv => kv ?  renderShell(unmergeKv(kv), {
-              renderEditor, contentObs, syntaxErrorObs
+            computed(ignoreRevision(primarySelection), kv => kv ?  renderShell(kv, {
+              renderEditor,
+              contentObs,
+              syntaxErrorObs,
+              previewObs
             }) : []),
+            // TODO: move to editor shell
             computed(errors, errs => {
               return h('.schema-errors', errs ?
                 errs.map( e => renderError(e))
@@ -103,12 +97,11 @@ client( (err, ssb, config) => {
           ]),
           makeDivider(),
           makePane('30%', [
-            h('h1', 'Property Sheet'), computed([schema, merged_kv, syntaxErrorObs], (schema, kv, syntaxError) => {
-              const c = content(kv)
-              if (!c || !schema) return []
+            h('h1', 'Property Sheet'), computed(ignoreRevision(primarySelection), kv => {
               return renderPropertySheet(kv, {
-                disabled: !!syntaxError,
-                contentObs
+                disabled: conputed(syntaxErrorObs, e => !!e),
+                contentObs,
+                previewObs
               })
             })
           ])
@@ -116,6 +109,19 @@ client( (err, ssb, config) => {
       ])
     ])
   )
+
+  function getPreviewObs(contentObs) {
+    const editing_kv = computed(contentObs, content => {
+      if (!content) return null
+      return {
+        key: 'draft',
+        value: {
+          content
+        }
+      }
+    })
+    return watchMerged(editing_kv)
+  }
 })
 
 // -- utils
@@ -204,6 +210,9 @@ function styles() {
     .tre-property-sheet .inherited input {
       background: #656464;
     }
+    .tre-property-sheet .new input {
+      background: white;
+    }
     .tre-property-sheet details > div {
       margin-left: 1em;
     }
@@ -237,3 +246,20 @@ function styles() {
     }
   `)
 }
+
+function revisionRoot(kv) {
+  return kv && kv.value.content && kv.value.content.revisionRoot || kv && kv.key
+}
+
+function ignoreRevision(primarySelection) {
+  let current_kv
+  return computed(primarySelection, kv => {
+    if (current_kv && revisionRoot(current_kv) == revisionRoot(kv)) {
+      return computed.NO_CHANGE
+    }
+    current_kv = kv
+    return kv
+  })
+}
+
+

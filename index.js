@@ -12,13 +12,16 @@ module.exports = function(opts) {
     ctx = ctx || {}
     const mergedContent = kv && kv.value.content
     const contentObs = ctx.contentObs || Value({})
-    const schema = mergedContent && mergedContent.schema
-    if (!schema) return
+    const previewObs = ctx.previewObs || Value(kv)
+    const schemaObs = computed(previewObs, kv => kv && kv.value.content.schema)
     
-    const skvs = getProperties(schema)
-    return h('fieldset.tre-property-sheet', {
-      disabled: ctx.disabled == true
-    }, skvs.map(skv => renderProperty(skv, [])))
+    return computed(schemaObs, schema => {
+      if (!schema) return []
+      const skvs = getProperties(schema)
+      return h('fieldset.tre-property-sheet', {
+        disabled: ctx.disabled
+      }, skvs.map(skv => renderProperty(skv, [])))
+    })
 
     function renderProperty(skv, path) {
       const fullPath = path.concat([skv.key])
@@ -32,48 +35,58 @@ module.exports = function(opts) {
         ])
       }
 
-      return computed(contentObs, content => {
-        let value = pointer.find(mergedContent, fullPath)
-        const cvalue = pointer.find(content, fullPath)
-        const isInherited = cvalue == undefined
-        const save = saveFunc(schema, skv, path, value, contentObs)
+      // pvalueObs might originate from a prototype
+      const pvalueObs = ctx.previewObs ?
+        computed(ctx.previewObs, kv => kv && pointer.find(kv.value.content, fullPath)) :
+        Value(pointer.find(mergedContent, fullPath))
+      // cvalueObs originates from this message only (own content)
+      const cvalueObs = computed(ctx.contentObs, content => content && pointer.find(content, fullPath))
 
-        if ('number integer string'.split(' ').includes(skv.value.type)) {
-          return [
-            h('div.property', {
-              classList: isInherited ?  ['inherited'] : [],
-              attributes: {
-                'data-schema-type': skv.value.type,
-                'data-schema-name': skv.key,
-                'data-schema-path': pointer.encode(fullPath)
-              }
-            }, [
-              h('span', title),
-              h('input', {
-                type: skv.value['input-type'] || (skv.value.type == 'number' ? 'number' : 'text'),
-                value,
-                'ev-blur': e => {
-                  save(e.target.value)
-                },
-                'ev-change': e => {
-                  save(e.target.value)
-                },
-                'ev-keydown': e => {
-                  if (e.key == 'Escape') {
-                    e.blur()
-                    e.preventDefault()
-                  }
-                  if (e.key == 'Enter') {
-                    save(e.target.value)
-                    e.preventDefault()
-                  }
-                }
-              })
-            ])
-          ]
-        }
-        return []
+      const save = saveFunc(schemaObs, skv, path, contentObs, pvalueObs)
+
+      const classList = computed([pvalueObs, cvalueObs], (pvalue, cvalue) => {
+        const isInherited = pvalue !== undefined && cvalue == undefined
+        //console.log('XXX', mergedContent, fullPath, cvalue)
+        const isNew = !isInherited && cvalue !== pointer.find(mergedContent, fullPath)
+        const cls = [...(isNew ? ['new'] : []), ...(isInherited ? ['inherited'] : [])]
+        return cls
       })
+
+      if (!'number integer string'.split(' ').includes(skv.value.type)) {
+        return []
+      }
+      return [
+        h('div.property', {
+          classList,
+          attributes: {
+            'data-schema-type': skv.value.type,
+            'data-schema-name': skv.key,
+            'data-schema-path': pointer.encode(fullPath)
+          }
+        }, [
+          h('span', title),
+          h('input', {
+            type: skv.value['input-type'] || (skv.value.type == 'number' ? 'number' : 'text'),
+            value: pvalueObs,
+            'ev-blur': e => {
+              save(e.target.value)
+            },
+            'ev-change': e => {
+              save(e.target.value)
+            },
+            'ev-keydown': e => {
+              if (e.key == 'Escape') {
+                e.blur()
+                e.preventDefault()
+              }
+              if (e.key == 'Enter') {
+                save(e.target.value)
+                e.preventDefault()
+              }
+            }
+          })
+        ])
+      ]
     }
   }
 }
@@ -122,20 +135,22 @@ function createContainer(schema, obj, path) {
   return createContainer(prop.value, obj[key], path)
 }
 
-function saveFunc(schema, skv, path, value, contentObs) {
+function saveFunc(schemaObs, skv, path, contentObs, pvalueObs) {
   return function(v) {
-    if (v == value) return
     const coerce = {
       number: Number,
       integer: Number,
       boolean: Boolean
     }[skv.value.type] || (x => x)
-    value = coerce(v)
+    const newValue = coerce(v)
+    const oldValue = pvalueObs()
+    if (newValue == oldValue) return
+
     // avoids destroying event.target in event handler
     setTimeout( ()=> {
       const c = contentObs()
-      const parent = pointer.find(c, path) || createContainer(schema, c, path)
-      parent[skv.key] = value
+      const parent = pointer.find(c, path) || createContainer(schemaObs(), c, path)
+      parent[skv.key] = newValue
       contentObs.set(c)
     }, 0)
   }
