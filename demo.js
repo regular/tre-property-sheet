@@ -12,102 +12,7 @@ const Shell = require('tre-editor-shell')
 const validate = require('./validate')
 require('brace/theme/solarized_dark')
 
-setStyle(`
-  body, html, .tre-schema-demo {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-  }
-  body {
-    --tre-selection-color: green;
-    --tre-secondary-selection-color: yellow;
-    font-family: sans-serif;
-  }
-  h1 {
-    font-size: 18px;
-  }
-  .pane {
-    background: #eee;
-  }
-  .tre-finder .summary select {
-    font-size: 9pt;
-    background: transparent;
-    border: none;
-    width: 50px;
-  }
-  .tre-finder summary {
-    white-space: nowrap;
-  }
-  .tre-finder summary:focus {
-    outline: 1px solid rgba(255,255,255,0.1);
-  }
-  .schema-errors span {
-    padding: .1em .1em;
-  }
-
-  .schema-errors .schemaPath {
-    display: none;
-  }
-
-  .schema-errors .keyword {
-    color: red;
-    margin-right: 2em;
-  }
-
-  .tre-property-sheet {
-    background: #4a4a4b;
-    color: #b6b6b6;
-  }
-
-  .tre-property-sheet summary {
-    font-weight: bold;
-    text-shadow: 0 0 4px black;
-    margin-top: .3em;
-    padding-top: .4em;
-    background: #555454;
-    border-top: 1px solid #807d7d;
-    margin-bottom: .1em;
-  }
-  .tre-property-sheet input {
-    background: #D0D052;
-    border: none;
-    margin-left: .5em;
-  }
-  .tre-property-sheet .inherited input {
-    background: #656464;
-  }
-  .tre-property-sheet details > div {
-    margin-left: 1em;
-  }
-  .tre-property-sheet [data-schema-type="number"] input {
-    width: 4em;
-  }
-  .tre-property-sheet .properties {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, 5em);
-  }
-
-  .tre-editor-shell {
-    width: 100%;
-  }
-  .tre-editor-shell .operations li span {
-    margin-right: .5em;
-  }
-  .tre-editor-shell .new-revision {
-    background: #B9A249;
-    padding: 1em;
-    margin-bottom: 1em;
-  }
-  .tre-editor-shell .operations span.path {
-    font-family: monospace;
-  }
-  .tre-editor-shell .operations span.value.string:before {
-    content: "\\"";
-  }
-  .tre-editor-shell .operations span.value.string:after {
-    content: "\\"";
-  }
-`)
+styles()
 
 client( (err, ssb, config) => {
   if (err) return console.error(err)
@@ -117,6 +22,9 @@ client( (err, ssb, config) => {
   const contentObs = Value()
   const syntaxErrorObs = Value()
   const primarySelection = Value()
+
+  // this is the "draft", a kv that changes with any edits made befire
+  // publishing
   const editing_kv = computed(contentObs, c => {
     if (!c) return null
     return {
@@ -231,3 +139,101 @@ function renderError(err) {
   return Object.keys(err).map(k => h(`span.${k}`, err[k]))
 }
 
+function styles() {
+  setStyle(`
+    body, html, .tre-schema-demo {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      --tre-selection-color: green;
+      --tre-secondary-selection-color: yellow;
+      font-family: sans-serif;
+    }
+    h1 {
+      font-size: 18px;
+    }
+    .pane {
+      background: #eee;
+    }
+    .tre-finder .summary select {
+      font-size: 9pt;
+      background: transparent;
+      border: none;
+      width: 50px;
+    }
+    .tre-finder summary {
+      white-space: nowrap;
+    }
+    .tre-finder summary:focus {
+      outline: 1px solid rgba(255,255,255,0.1);
+    }
+    .schema-errors span {
+      padding: .1em .1em;
+    }
+
+    .schema-errors .schemaPath {
+      display: none;
+    }
+
+    .schema-errors .keyword {
+      color: red;
+      margin-right: 2em;
+    }
+
+    .tre-property-sheet {
+      background: #4a4a4b;
+      color: #b6b6b6;
+    }
+
+    .tre-property-sheet summary {
+      font-weight: bold;
+      text-shadow: 0 0 4px black;
+      margin-top: .3em;
+      padding-top: .4em;
+      background: #555454;
+      border-top: 1px solid #807d7d;
+      margin-bottom: .1em;
+    }
+    .tre-property-sheet input {
+      background: #D0D052;
+      border: none;
+      margin-left: .5em;
+    }
+    .tre-property-sheet .inherited input {
+      background: #656464;
+    }
+    .tre-property-sheet details > div {
+      margin-left: 1em;
+    }
+    .tre-property-sheet [data-schema-type="number"] input {
+      width: 4em;
+    }
+    .tre-property-sheet .properties {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, 5em);
+    }
+
+    .tre-editor-shell {
+      width: 100%;
+    }
+    .tre-editor-shell .operations li span {
+      margin-right: .5em;
+    }
+    .tre-editor-shell .new-revision {
+      background: #B9A249;
+      padding: 1em;
+      margin-bottom: 1em;
+    }
+    .tre-editor-shell .operations span.path {
+      font-family: monospace;
+    }
+    .tre-editor-shell .operations span.value.string:before {
+      content: "\\"";
+    }
+    .tre-editor-shell .operations span.value.string:after {
+      content: "\\"";
+    }
+  `)
+}

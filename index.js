@@ -34,7 +34,8 @@ module.exports = function(opts) {
 
       return computed(contentObs, content => {
         let value = pointer.find(mergedContent, fullPath)
-        const isInherited = value !== pointer.find(content, fullPath)
+        const cvalue = pointer.find(content, fullPath)
+        const isInherited = cvalue == undefined
         const save = saveFunc(schema, skv, path, value, contentObs)
 
         if ('number integer string'.split(' ').includes(skv.value.type)) {
