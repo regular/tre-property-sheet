@@ -35,7 +35,7 @@ module.exports = function(opts) {
       return computed(contentObs, content => {
         let value = pointer.find(content, fullPath)
         const isInherited = value !== pointer.find(content, fullPath)
-        const save = saveFunc(value, contentObs)
+        const save = saveFunc(skv, path, value, contentObs)
 
         if ('number integer string'.split(' ').includes(skv.value.type)) {
           return [
@@ -121,7 +121,7 @@ function createContainer(schema, obj, path) {
   return createContainer(prop.value, obj[key], path)
 }
 
-function saveFunc(value, contentObs) {
+function saveFunc(skv, path, value, contentObs) {
   return function(v) {
     if (v == value) return
     const coerce = {
