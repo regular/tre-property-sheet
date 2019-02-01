@@ -10,9 +10,9 @@ module.exports = function(opts) {
 
   return function renderPropertySheet(kv, ctx) {
     ctx = ctx || {}
-    const content = kv && kv.value.content
-    const contentObs = ctx.contentObs || Value(content || {})
-    const schema = content && content.schema
+    const mergedContent = kv && kv.value.content
+    const contentObs = ctx.contentObs || Value({})
+    const schema = mergedContent && mergedContent.schema
     if (!schema) return
     
     const skvs = getProperties(schema)
@@ -33,9 +33,9 @@ module.exports = function(opts) {
       }
 
       return computed(contentObs, content => {
-        let value = pointer.find(content, fullPath)
+        let value = pointer.find(mergedContent, fullPath)
         const isInherited = value !== pointer.find(content, fullPath)
-        const save = saveFunc(skv, path, value, contentObs)
+        const save = saveFunc(schema, skv, path, value, contentObs)
 
         if ('number integer string'.split(' ').includes(skv.value.type)) {
           return [
@@ -121,7 +121,7 @@ function createContainer(schema, obj, path) {
   return createContainer(prop.value, obj[key], path)
 }
 
-function saveFunc(skv, path, value, contentObs) {
+function saveFunc(schema, skv, path, value, contentObs) {
   return function(v) {
     if (v == value) return
     const coerce = {
