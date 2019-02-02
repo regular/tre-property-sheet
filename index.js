@@ -148,7 +148,7 @@ function saveFunc(schemaObs, skv, path, contentObs, pvalueObs) {
 
     // avoids destroying event.target in event handler
     setTimeout( ()=> {
-      const c = contentObs()
+      const c = Object.assign({}, contentObs())
       const parent = pointer.find(c, path) || createContainer(schemaObs(), c, path)
       parent[skv.key] = newValue
       contentObs.set(c)
