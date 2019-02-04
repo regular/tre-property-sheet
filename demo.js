@@ -99,7 +99,7 @@ client( (err, ssb, config) => {
           makePane('30%', [
             h('h1', 'Property Sheet'), computed(ignoreRevision(primarySelection), kv => {
               return renderPropertySheet(kv, {
-                disabled: conputed(syntaxErrorObs, e => !!e),
+                disabled: computed(syntaxErrorObs, e => !!e),
                 contentObs,
                 previewObs
               })
